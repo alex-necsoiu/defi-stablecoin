@@ -2,6 +2,15 @@
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
 
+1. Relative Stability: Anchored or Pegged -> $1.00
+	1.1 Chainlink Price Feed
+	1.2 Set a function to Exchange ETH & BTC -> $$$
+2. Stability Mechanism (Minting): Algorithmic (Descentralized)
+	2.1 Users can only mint the Stablecoin with enough collateral
+3. Collateral: Exogenous (Crypto)
+	3.1 ETH
+	3.2 BTC
+
 Foundry consists of:
 
 -   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
