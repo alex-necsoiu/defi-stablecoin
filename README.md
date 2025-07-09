@@ -11,6 +11,23 @@
 
 ---
 
+## 📚 Table of Contents
+
+- [Overview](#-overview)
+- [Features](#-features)
+- [Project Structure](#-project-structure)
+- [Contract Layout & Design Principles](#-contract-layout--design-principles)
+- [Smart Contract Functionalities](#-smart-contract-functionalities)
+- [Quick Start](#-quick-start)
+- [Usage](#-usage)
+- [Testing](#-testing)
+- [Contribution](#-contribution)
+- [License](#-license)
+- [Acknowledgements](#-acknowledgements)
+- [Contact](#-contact)
+
+---
+
 ## 🚀 Overview
 
 This project implements a decentralized stablecoin protocol inspired by MakerDAO, using exogenous collateral (ETH & BTC) and Chainlink price feeds to maintain a $1.00 peg. The protocol is designed for security, transparency, and extensibility, leveraging the latest OpenZeppelin Contracts v5.x and Foundry tooling.
@@ -89,6 +106,82 @@ This project follows a clear and modular layout inspired by industry best practi
 > 🛡️ **Security:** Grouping errors, modifiers, and state variables makes it easier to audit.  
 > 🧩 **Maintainability:** Logical separation of concerns simplifies future upgrades and debugging.
 
+
+
+## 🧑‍💻 Development Notes
+## 🧠 Smart Contract Functionalities
+
+The core of this protocol is implemented in the `DSCEngine` contract, which orchestrates all stablecoin logic, collateral management, and system safety. Below is a summary of its main functionalities:
+
+---
+
+### ✨ Key Functionalities
+
+| Functionality                | Description                                                                                                 |
+|------------------------------|-------------------------------------------------------------------------------------------------------------|
+| **Collateral Deposit**       | Users can deposit supported collateral tokens (e.g., WETH, WBTC) to the protocol.                           |
+| **Stablecoin Minting**       | Users mint DSC (the stablecoin) against their deposited collateral, subject to over-collateralization rules. |
+| **Collateral Redemption**    | Users can redeem their collateral by repaying DSC, ensuring their health factor remains above the threshold. |
+| **Burning DSC**              | Users can burn DSC to reduce their debt and improve their health factor.                                    |
+| **Liquidation**              | If a user's health factor falls below the minimum, their position can be liquidated by others for a bonus.  |
+| **Price Feeds**              | All collateral valuations use Chainlink oracles for real-time, tamper-resistant pricing.                    |
+| **Health Factor Calculation**| The protocol continuously checks each user's health factor to ensure system solvency and prevent undercollateralization. |
+| **Access Control & Security**| Uses OpenZeppelin's `ReentrancyGuard` and `SafeERC20` for secure token operations and to prevent attacks.   |
+
+---
+
+### 🛡️ Security & Design Highlights
+
+- **Overcollateralization:**  
+  The protocol enforces a minimum collateralization ratio (e.g., 200%) to protect against market volatility.
+- **Liquidation Mechanism:**  
+  Undercollateralized positions can be liquidated by anyone, incentivized by a liquidation bonus.
+- **Oracle Integration:**  
+  Chainlink price feeds are used to ensure accurate and reliable collateral valuation.
+- **Upgradeable & Modular:**  
+  The contract is designed for extensibility, with clear separation of concerns and modular code sections.
+- **Professional Documentation:**  
+  All sections and functions are clearly commented and separated for easy auditing and maintainability.
+
+---
+
+### 📚 For Developers
+
+- **Events** are emitted for all major actions (deposits, redemptions, liquidations) for easy off-chain tracking.
+- **Modifiers** enforce business logic and access control.
+- **Custom Errors** provide gas-efficient and descriptive revert reasons.
+- **Getters** allow external contracts and frontends to query protocol state.
+
+---
+
+> For a detailed breakdown, see the [DSCEngine.sol](src/DSCEngine.sol) source code and the in-line NatSpec
+- **Dependencies:**  
+  - OpenZeppelin Contracts v5.x  
+  - Chainlink Brownie Contracts  
+- **Remappings:**  
+  Ensure your `foundry.toml` includes:
+  ```toml
+  remappings = [
+      'chainlink/=lib/chainlink-brownie-contracts/contracts/',
+      'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/'
+  ]
+  ```
+- **Security:**  
+  - All external calls use [ReentrancyGuard](https://docs.openzeppelin.com/contracts/5.x/api/utils#ReentrancyGuard) and [SafeERC20](https://docs.openzeppelin.com/contracts/5.x/api/token/erc20#SafeERC20).
+  - Chainlink oracles are used for all price feeds.
+
+---
+
+## ⚡ Quick Start
+
+```sh
+git clone https://github.com/yourusername/defi-stablecoin.git
+cd defi-stablecoin
+forge install
+forge build
+anvil
+```
+
 ---
 
 ## ⚙️ Usage
@@ -138,26 +231,6 @@ forge script script/DeployDSC.s.sol:DeployDSC --rpc-url <your_rpc_url> --private
 - [Chainlink Docs](https://docs.chain.link/)
 
 ---
-
-## 🧑‍💻 Development Notes
-
-- **Dependencies:**  
-  - OpenZeppelin Contracts v5.x  
-  - Chainlink Brownie Contracts  
-- **Remappings:**  
-  Ensure your `foundry.toml` includes:
-  ```toml
-  remappings = [
-      'chainlink/=lib/chainlink-brownie-contracts/contracts/',
-      'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/'
-  ]
-  ```
-- **Security:**  
-  - All external calls use [ReentrancyGuard](https://docs.openzeppelin.com/contracts/5.x/api/utils#ReentrancyGuard) and [SafeERC20](https://docs.openzeppelin.com/contracts/5.x/api/token/erc20#SafeERC20).
-  - Chainlink oracles are used for all price feeds.
-
----
-
 ## 🧪 Testing
 
 - All core logic is covered by unit tests in `/test/unit`.
