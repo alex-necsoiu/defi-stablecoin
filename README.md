@@ -101,6 +101,7 @@ This project follows a clear and modular layout inspired by industry best practi
 
 ---
 
+## 🧑‍💻 Development Notes
 > **Why this layout?**  
 > 🧑‍💻 **Readability:** Developers can quickly find and understand each part of the contract.  
 > 🛡️ **Security:** Grouping errors, modifiers, and state variables makes it easier to audit.  
@@ -108,7 +109,7 @@ This project follows a clear and modular layout inspired by industry best practi
 
 
 
-## 🧑‍💻 Development Notes
+
 ## 🧠 Smart Contract Functionalities
 
 The core of this protocol is implemented in the `DSCEngine` contract, which orchestrates all stablecoin logic, collateral management, and system safety. Below is a summary of its main functionalities:
