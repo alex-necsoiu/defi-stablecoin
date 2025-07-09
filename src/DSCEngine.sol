@@ -1,11 +1,11 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {DecentralizedStableCoin} from "./DecentralizedStableCoin.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import { DecentralizedStableCoin } from "./DecentralizedStableCoin.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import { AggregatorV3Interface } from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 /**
  * @title Decentralized Stable Coin Engine
@@ -18,37 +18,18 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interf
  * - Algorithmically Stable
  * It is similar to DAI if DAI had no governance, no fees, and only backed by WETH and WBTC.
  *
- * @notice This contract is the engine of the DSC System. It handles all the logic for the minting and redeeming DSC, as well as depositing & withdrawing collateral.
+ * @notice This contract is the engine of the DSC System. It handles all the logic for the minting and redeeming DSC, as
+ * well as depositing & withdrawing collateral.
  * @notice This contract is based on the MakerDAO DSS (DAI) system.
  */
 
-// Layout of Contract:
-// version
-// imports
-// interfaces, libraries, contracts
-// errors
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
-
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
-// external
-// public
-// internal
-// private
-// view & pure functions
 
 contract DSCEngine is ReentrancyGuard {
-       using SafeERC20 for IERC20;
+    using SafeERC20 for IERC20;
     ///////////////////
     // Errors	     //
     ///////////////////
-  
+
     error DSCEngine__TokenFeedAddressesAndPriceFeedAddressesMustBeSameLength();
     error DSCEngine__TokenNotAllowed();
     error DSCEngine__TransferFailed();
@@ -65,12 +46,16 @@ contract DSCEngine is ReentrancyGuard {
     uint256 private constant LIQUIDATION_BONUS = 10; // This means you get assets at a 10% discount when liquidating
     uint256 private constant LIQUIDATION_PRECISION = 100;
     uint256 private constant MIN_HEALTH_FACTOR = 1e18;
-    uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10; // 1.0 in 18 decimals, used to determine if the health factor is healthy
+    uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10; // 1.0 in 18 decimals, used to determine if the health
+        // factor is healthy
     uint256 private constant PRECISION = 1e18; // 1.0 in 18 decimals, used to determine if the health factor is healthy
 
-    mapping(address token => address priceFeed) private s_priceFeeds; // Mapping of token addresses to their price feed addresses
-    mapping(address user => mapping(address token => uint256 amount)) private s_collateralDeposited; // Mapping of user addresses to their collateral deposits
-    mapping(address user => uint256 amountDscMinted) private s_dscMinted; // Mapping of user addresses to the amount of DSC minted
+    mapping(address token => address priceFeed) private s_priceFeeds; // Mapping of token addresses to their price feed
+        // addresses
+    mapping(address user => mapping(address token => uint256 amount)) private s_collateralDeposited; // Mapping of user
+        // addresses to their collateral deposits
+    mapping(address user => uint256 amountDscMinted) private s_dscMinted; // Mapping of user addresses to the amount of
+        // DSC minted
 
     address[] private s_collateralTokens; // Array of collateral token addresses
 
@@ -91,8 +76,8 @@ contract DSCEngine is ReentrancyGuard {
      * @notice This modifier checks if the amount is more than zero.
      * @param amount The amount to check.
      * @dev If the amount is zero, it will revert with the DSCEngine__MustBeMoreThanZero error.
-     * @dev This modifier is used to ensure that the amount is more than zero before proceeding with the function execution.
-     * @dev This modifier is used in functions that require a non-zero amount, such as depositing collateral or minting DSC.
+     * @dev This modifier is used to ensure that the amount is more than zero before proceeding with the function
+     * execution.
      * @
      */
     modifier moreThanZero(uint256 amount) {
@@ -106,7 +91,8 @@ contract DSCEngine is ReentrancyGuard {
      * @notice This modifier checks if the token is allowed to be used as collateral.
      * @param token The address of the token to check.
      * @dev If the token is not allowed, it will revert with the DSCEngine__TokenNotAllowed error.
-     * @dev This modifier is used in functions that require a valid collateral token, such as depositing collateral or minting DSC.
+     * @dev This modifier is used in functions that require a valid collateral token, such as depositing collateral or
+     * minting DSC.
      */
     modifier isAllowedToken(address token) {
         // This modifier will check if the token is allowed to be used as collateral
@@ -126,9 +112,11 @@ contract DSCEngine is ReentrancyGuard {
      * @param tokenAddress An array of addresses of the tokens that can be used as collateral.
      * @param priceFeedAddresses An array of addresses of the price feeds for the tokens.
      * @param dscAddress The address of the Decentralized Stable Coin (DSC) contract.
-     * @dev This constructor initializes the DSCEngine contract with the provided token addresses and their corresponding price feed addresses.
+     * @dev This constructor initializes the DSCEngine contract with the provided token addresses and their
+     * corresponding price feed addresses.
      * @dev It also sets the Decentralized Stable Coin (DSC) contract address.
-     * @dev The Decentralized Stable Coin (DSC) contract is set as an immutable variable, meaning it cannot be changed after the contract is deployed.
+     * @dev The Decentralized Stable Coin (DSC) contract is set as an immutable variable, meaning it cannot be changed
+     * after the contract is deployed.
      */
     constructor(address[] memory tokenAddress, address[] memory priceFeedAddresses, address dscAddress) {
         if (tokenAddress.length != priceFeedAddresses.length) {
@@ -145,7 +133,7 @@ contract DSCEngine is ReentrancyGuard {
     // External Functions     //
     ///////////////////////////
 
-    /*
+    /**
      * @param tokenCollateralAddress: The ERC20 token address of the collateral you're depositing
      * @param amountCollateral: The amount of collateral you're depositing
      * @param amountDscToMint: The amount of DSC you want to mint
@@ -162,33 +150,7 @@ contract DSCEngine is ReentrancyGuard {
         mintDsc(amountDscToMint);
     }
 
-
     /**
-     * @param tokenCollateralAddress The address of the collateral token to deposit.
-     * @param amountCollateral The amount of collateral to deposit.
-     * @notice This function allows the user to deposit collateral and mint DSC at the same time
-     * @notice The collateral must be approved to this contract before calling this function.
-     * @notice The amount of collateral must be more than zero.
-     */
-    /*
-     * @param tokenCollateralAddress: The ERC20 token address of the collateral you're depositing
-     * @param amountCollateral: The amount of collateral you're depositing
-     */
-    function depositCollateral(
-        address tokenCollateralAddress,
-        uint256 amountCollateral
-    )
-        public
-        moreThanZero(amountCollateral)
-        nonReentrant
-        isAllowedToken(tokenCollateralAddress)
-    {
-        s_collateralDeposited[msg.sender][tokenCollateralAddress] += amountCollateral;
-        emit CollateralDeposited(msg.sender, tokenCollateralAddress, amountCollateral);
-        IERC20(tokenCollateralAddress).safeTransferFrom(msg.sender, address(this), amountCollateral);
-    }
-
-    /*
      * @param tokenCollateralAddress: The ERC20 token address of the collateral you're withdrawing
      * @param amountCollateral: The amount of collateral you're withdrawing
      * @param amountDscToBurn: The amount of DSC you want to burn
@@ -208,7 +170,7 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorIsBroken(msg.sender);
     }
 
-    /*
+    /**
      * @param tokenCollateralAddress: The ERC20 token address of the collateral you're redeeming
      * @param amountCollateral: The amount of collateral you're redeeming
      * @notice This function will redeem your collateral.
@@ -234,7 +196,7 @@ contract DSCEngine is ReentrancyGuard {
         i_dsc.burn(amountDscToBurn);
     }
 
-   /*
+    /*
      * @param collateral: The ERC20 token address of the collateral you're using to make the protocol solvent again.
      * This is collateral that you're going to take from the user who is insolvent.
      * In return, you have to burn your DSC to pay off their debt, but you don't pay off your own.
@@ -283,6 +245,44 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorIsBroken(msg.sender);
     }
 
+    ///////////////////
+    // Public Functions
+    ///////////////////
+    /*
+     * @param amountDscToMint: The amount of DSC you want to mint
+     * You can only mint DSC if you have enough collateral
+     */
+    function mintDsc(uint256 amountDscToMint) public moreThanZero(amountDscToMint) nonReentrant {
+        s_dscMinted[msg.sender] += amountDscToMint;
+        _revertIfHealthFactorIsBroken(msg.sender);
+        bool minted = i_dsc.mint(msg.sender, amountDscToMint);
+
+        if (minted != true) {
+            revert DSCEngine__MintFailed();
+        }
+    }
+
+    /**
+     * @param tokenCollateralAddress The address of the collateral token to deposit.
+     * @param amountCollateral The amount of collateral to deposit.
+     * @notice This function allows the user to deposit collateral and mint DSC at the same time
+     * @notice The collateral must be approved to this contract before calling this function.
+     * @notice The amount of collateral must be more than zero.
+     */
+    function depositCollateral(
+        address tokenCollateralAddress,
+        uint256 amountCollateral
+    )
+        public
+        moreThanZero(amountCollateral)
+        nonReentrant
+        isAllowedToken(tokenCollateralAddress)
+    {
+        s_collateralDeposited[msg.sender][tokenCollateralAddress] += amountCollateral;
+        emit CollateralDeposited(msg.sender, tokenCollateralAddress, amountCollateral);
+        IERC20(tokenCollateralAddress).safeTransferFrom(msg.sender, address(this), amountCollateral);
+    }
+
     ///////////////////////////////////////////
     // Private & Internal View Functions     //
     ///////////////////////////////////////////
@@ -306,16 +306,16 @@ contract DSCEngine is ReentrancyGuard {
      * Returns how close to the liquidation threshold the user is.
      * If the health factor is less than 1, the user is at risk of liquidation.
      */
-       function _healthFactor(address user) private view returns (uint256) {
+    function _healthFactor(address user) private view returns (uint256) {
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = _getAccountInformation(user);
         return _calculateHealthFactor(totalDscMinted, collateralValueInUsd);
     }
 
-    
     // function _getHealthFactor(address user) private view returns (uint256) {
     //     (uint256 totalDscMinted, uint256 totalCollateralValueInUsd) = _getAccountInformation(user);
     //     uint256 collateralAdjustedForThreshold =
-    //         (totalCollateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION; // 50% of the collateral value
+    //         (totalCollateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION; // 50% of the collateral
+    // value
 
     //     // $150 ETH / 100 DSC = 1.5
     //     // 150 * 50 = 7500 / 100 = (75 / 100) < 1.0
@@ -324,7 +324,7 @@ contract DSCEngine is ReentrancyGuard {
     //     // 1000 * 50 = 50000 / 100 = (500 / 100) > 1.0
     //     return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     // }
-    
+
     function _calculateHealthFactor(
         uint256 totalDscMinted,
         uint256 collateralValueInUsd
@@ -338,7 +338,6 @@ contract DSCEngine is ReentrancyGuard {
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     }
 
-
     /**
      * @notice This function calculates the health factor for a user.
      * If health factor is less than 1, the user is at risk of liquidation.
@@ -350,18 +349,19 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
-    /** 
+    /**
      * @notice This function redeems collateral for a user.
      * @param tokenCollateralAddress The address of the collateral token to redeem.
      * @param amountCollateral The amount of collateral to redeem.
      * @param from The address of the user redeeming the collateral.
      * @param to The address to send the redeemed collateral to.
-     * @dev This function updates the user's collateral balance, emits an event, and transfers the collateral to the specified address.
+     * @dev This function updates the user's collateral balance, emits an event, and transfers the collateral to the
+     * specified address.
      * @dev It is called internally by the redeemCollateral and redeemCollateralForDsc functions.
      * @dev The function checks if the user has enough collateral to redeem.
      * @dev If the user does not have enough collateral, it will revert with an error.
      * @dev The function uses SafeERC20 to safely transfer the collateral token to the< specified address.
-    */
+     */
     function _redeemCollateral(
         address tokenCollateralAddress,
         uint256 amountCollateral,
@@ -392,6 +392,7 @@ contract DSCEngine is ReentrancyGuard {
      * @param user The address of the user to get the collateral value for.
      * @return totalCollateralValueInUsd The total collateral value in USD for the given user address.
      */
+
     function getAccountCollateralValue(address user) public view returns (uint256 totalCollateralValueInUsd) {
         for (uint256 i = 0; i < s_collateralTokens.length; i++) {
             // Get the collateral value from token address
@@ -410,7 +411,6 @@ contract DSCEngine is ReentrancyGuard {
      * @dev This function uses the Chainlink price feed to get the latest price of the token.
      * @dev It assumes that the price feed returns a value with 8 decimals places.
      */
-    
     function getTokenAmountFromUsd(address token, uint256 usdAmountInWei) public view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         (, int256 price,,,) = priceFeed.latestRoundData(); // Return 8 decimals places
@@ -434,23 +434,6 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         (, int256 price,,,) = priceFeed.latestRoundData(); // Return 8 decimals places
         return ((uint256(price) * ADDITIONAL_FEED_PRECISION) * amount) / PRECISION; // (1000 * 1e8 * 1e10) * 1000 * 1e18
-    }
-    
-    ///////////////////
-    // Public Functions
-    ///////////////////
-    /*
-     * @param amountDscToMint: The amount of DSC you want to mint
-     * You can only mint DSC if you have enough collateral
-     */
-    function mintDsc(uint256 amountDscToMint) public moreThanZero(amountDscToMint) nonReentrant {
-        s_dscMinted[msg.sender] += amountDscToMint;
-        _revertIfHealthFactorIsBroken(msg.sender);
-        bool minted = i_dsc.mint(msg.sender, amountDscToMint);
-
-        if (minted != true) {
-            revert DSCEngine__MintFailed();
-        }
     }
 
     function getPrecision() external pure returns (uint256) {
@@ -488,5 +471,4 @@ contract DSCEngine is ReentrancyGuard {
     function getCollateralTokenPriceFeed(address token) external view returns (address) {
         return s_priceFeeds[token];
     }
-
 }

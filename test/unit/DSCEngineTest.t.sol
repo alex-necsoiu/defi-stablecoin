@@ -62,6 +62,7 @@ contract DSCEngineTest is Test {
         dsce.depositCollateral(weth, 0);
         vm.stopPrank();
     }
+    
     function testRevertsWithUnapprovedCollateral() public {
         ERC20Mock randToken = new ERC20Mock("RAN", "RAN", user, 100e18);
         vm.startPrank(user);
