@@ -29,6 +29,7 @@ contract DSCEngineTest is Test {
     // Liquidation
     address public liquidator = makeAddr("liquidator");
     uint256 public collateralToCover = 20 ether;
+
 	function setUp() public {
     		DeployDSC deployer = new DeployDSC();
 		(dsc, dsce, helperConfig) = deployer.run();
@@ -36,4 +37,36 @@ contract DSCEngineTest is Test {
 		ERC20Mock(weth).mint(user, STARTING_USER_BALANCE);
         	ERC20Mock(wbtc).mint(user, STARTING_USER_BALANCE);
 	}
+
+    //////////////////
+    // Price Tests //
+    //////////////////
+    function testGetUsdValue() public {
+        uint256 ethAmount = 15e18; // 15 ETH (18 decimals)
+        // If ETH price is $2000, 15 ETH = $30,000
+        // If getUsdValue returns 18 decimals, expected = 30,000 * 1e18
+        uint256 expectedUsdValue = 30000e18;
+        uint256 actualUsdValue = dsce.getUsdValue(weth, ethAmount);
+        assertEq(actualUsdValue, expectedUsdValue, "USD value calculation is incorrect");
+    }
+
+     ///////////////////////////////////////
+    // depositCollateral Tests //
+    ///////////////////////////////////////
+    
+    function testRevertsIfCollateralZero() public {
+        vm.startPrank(user);
+        ERC20Mock(weth).approve(address(dsce), amountCollateral);
+
+        vm.expectRevert(DSCEngine.DSCEngine__NeedsMoreThanZero.selector);
+        dsce.depositCollateral(weth, 0);
+        vm.stopPrank();
+    }
+    function testRevertsWithUnapprovedCollateral() public {
+        ERC20Mock randToken = new ERC20Mock("RAN", "RAN", user, 100e18);
+        vm.startPrank(user);
+        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__TokenNotAllowed.selector, address(randToken)));
+        dsce.depositCollateral(address(randToken), amountCollateral);
+        vm.stopPrank();
+    }
 }
