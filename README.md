@@ -101,14 +101,12 @@ This project follows a clear and modular layout inspired by industry best practi
 
 ---
 
-## 🧑‍💻 Development Notes
 > **Why this layout?**  
 > 🧑‍💻 **Readability:** Developers can quickly find and understand each part of the contract.  
 > 🛡️ **Security:** Grouping errors, modifiers, and state variables makes it easier to audit.  
 > 🧩 **Maintainability:** Logical separation of concerns simplifies future upgrades and debugging.
 
-
-
+---
 
 ## 🧠 Smart Contract Functionalities
 
@@ -155,28 +153,14 @@ The core of this protocol is implemented in the `DSCEngine` contract, which orch
 
 ---
 
-> For a detailed breakdown, see the [DSCEngine.sol](src/DSCEngine.sol) source code and the in-line NatSpec
-- **Dependencies:**  
-  - OpenZeppelin Contracts v5.x  
-  - Chainlink Brownie Contracts  
-- **Remappings:**  
-  Ensure your `foundry.toml` includes:
-  ```toml
-  remappings = [
-      'chainlink/=lib/chainlink-brownie-contracts/contracts/',
-      'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/'
-  ]
-  ```
-- **Security:**  
-  - All external calls use [ReentrancyGuard](https://docs.openzeppelin.com/contracts/5.x/api/utils#ReentrancyGuard) and [SafeERC20](https://docs.openzeppelin.com/contracts/5.x/api/token/erc20#SafeERC20).
-  - Chainlink oracles are used for all price feeds.
+> For a detailed breakdown, see the [DSCEngine.sol](src/DSCEngine.sol) source code and the in-line NatSpec documentation.
 
 ---
 
 ## ⚡ Quick Start
 
 ```sh
-git clone https://github.com/yourusername/defi-stablecoin.git
+git clone https://github.com/alex-necsoiu/defi-stablecoin.git
 cd defi-stablecoin
 forge install
 forge build
@@ -225,13 +209,6 @@ forge script script/DeployDSC.s.sol:DeployDSC --rpc-url <your_rpc_url> --private
 
 ---
 
-## 📚 Documentation
-
-- [Foundry Book](https://book.getfoundry.sh/)
-- [OpenZeppelin Contracts v5.x](https://docs.openzeppelin.com/contracts/5.x/)
-- [Chainlink Docs](https://docs.chain.link/)
-
----
 ## 🧪 Testing
 
 - All core logic is covered by unit tests in `/test/unit`.
@@ -239,6 +216,20 @@ forge script script/DeployDSC.s.sol:DeployDSC --rpc-url <your_rpc_url> --private
   ```sh
   forge test -m <TestFunctionName>
   ```
+
+---
+
+## 📚 Documentation
+
+- [Foundry Book](https://book.getfoundry.sh/)
+- [OpenZeppelin Contracts v5.x](https://docs.openzeppelin.com/contracts/5.x/)
+- [Chainlink Docs](https://docs.chain.link/)
+
+---
+
+## 🤝 Contribution
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
@@ -252,6 +243,13 @@ forge script script/DeployDSC.s.sol:DeployDSC --rpc-url <your_rpc_url> --private
 
 ## 📝 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
+
+## 📬 Contact
+
+For questions, issues, or support, please open an [issue](https://github.com/yourusername/defi-stablecoin/issues) or contact [Alex Necsoiu](mailto:your.email@example.com).
+
+---
+

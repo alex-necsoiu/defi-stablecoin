@@ -1,87 +1,56 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.30;
+pragma solidity 0.8.30;
 
 // This is considered an Exogenous, Decentralized, Anchored (pegged), Crypto Collateralized low volitility coin
 
-// Layout of Contract:
-// version
-// imports
-// interfaces, libraries, contracts
-// errors
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
 
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
-// external
-// public
-// internal
-// private
-// view & pure functions
+
+import { ERC20Burnable, ERC20 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /*
- * @title Decentralized Stable Coin
+ * @title DecentralizedStableCoin
  * @author Alex Necsoiu
- * Colateral: Exogenus (ETH & BTC)
- * Minting: Algorithmic (Decentralized)
- * Relative Stability: Anchored or Pegged -> $1.00
+ * Collateral: Exogenous
+ * Minting (Stability Mechanism): Decentralized (Algorithmic)
+ * Value (Relative Stability): Anchored (Pegged to USD)
+ * Collateral Type: Crypto
  *
- * This contract meat to be governed by the DSCEngine contract.
- * This contract is just the ERC20 implementation of the Decentralized Stable Coin (DSC).
+* This is the contract meant to be owned by DSCEngine. It is a ERC20 token that can be minted and burned by the
+DSCEngine smart contract.
  */
-import {ERC20Burnable, ERC20} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-
 contract DecentralizedStableCoin is ERC20Burnable, Ownable {
-    ///////////////////
-    // Errors	     //
-    ///////////////////
-    error DecentralizedStableCoin__MustBeMoreThanZero(); // Fixed typo
+    error DecentralizedStableCoin__AmountMustBeMoreThanZero();
     error DecentralizedStableCoin__BurnAmountExceedsBalance();
     error DecentralizedStableCoin__NotZeroAddress();
 
-    constructor()
-        ERC20("Decentralized Stable Coin", "DSC")
-        Ownable(msg.sender)
-    {}
+    /*
+    In future versions of OpenZeppelin contracts package, Ownable must be declared with an address of the contract owner
+    as a parameter.
+    For example:
+    constructor() ERC20("DecentralizedStableCoin", "DSC") Ownable(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) {}
+    Related code changes can be viewed in this commit:
+    https://github.com/OpenZeppelin/openzeppelin-contracts/commit/13d5e0466a9855e9305119ed383e54fc913fdc60
+    */
+    constructor(address initialOwner) ERC20("DecentralizedStableCoin", "DSC") Ownable(initialOwner) { }
 
-    /**
-     * Burn DSC tokens from the caller's account.
-     * @param _amount The amount of tokens to burn.
-     * @notice This function allows the owner to burn a specified amount of DSC tokens from their
-     */
     function burn(uint256 _amount) public override onlyOwner {
         uint256 balance = balanceOf(msg.sender);
         if (_amount <= 0) {
-            revert DecentralizedStableCoin__MustBeMoreThanZero(); // Fixed typo
+            revert DecentralizedStableCoin__AmountMustBeMoreThanZero();
         }
         if (balance < _amount) {
             revert DecentralizedStableCoin__BurnAmountExceedsBalance();
         }
-
-        // Call the parent burn function from ERC20Burnable
         super.burn(_amount);
     }
-    /**
-     * Mint DSC tokens to a specified address.
-     * @param _to The address to mint tokens to.
-     * @param _amount The amount of tokens to mint.
-     * @return bool indicating success of the operation.
-     */
-    function mint(
-        address _to,
-        uint256 _amount
-    ) external onlyOwner returns (bool) {
+
+    function mint(address _to, uint256 _amount) external onlyOwner returns (bool) {
         if (_to == address(0)) {
             revert DecentralizedStableCoin__NotZeroAddress();
         }
         if (_amount <= 0) {
-            revert DecentralizedStableCoin__MustBeMoreThanZero(); // Fixed typo
+            revert DecentralizedStableCoin__AmountMustBeMoreThanZero();
         }
         _mint(_to, _amount);
         return true;

@@ -37,14 +37,15 @@ contract DSCEngine is ReentrancyGuard {
     //                                ERRORS
     // ─────────────────────────────────────────────────────────────────────────
 
-    error DSCEngine__TokenFeedAddressesAndPriceFeedAddressesMustBeSameLength();
-    error DSCEngine__TokenNotAllowed();
+    error DSCEngine__TokenAddressesAndPriceFeedAddressesAmountsDontMatch();
+    error DSCEngine__NeedsMoreThanZero();
+    error DSCEngine__TokenNotAllowed(address token);
     error DSCEngine__TransferFailed();
     error DSCEngine__BreaksHealthFactor(uint256 healthFactorValue);
     error DSCEngine__MintFailed();
     error DSCEngine__HealthFactorOk();
     error DSCEngine__HealthFactorNotImproved();
-    error DSCEngine__NeedsMoreThanZero();
+
 
     // ─────────────────────────────────────────────────────────────────────────
     // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -98,7 +99,7 @@ contract DSCEngine is ReentrancyGuard {
      */
     modifier isAllowedToken(address token) {
         if (s_priceFeeds[token] == address(0)) {
-            revert DSCEngine__TokenNotAllowed();
+            revert DSCEngine__TokenNotAllowed(token);
         }
         _;
     }
@@ -110,17 +111,19 @@ contract DSCEngine is ReentrancyGuard {
 
     /**
      * @notice Initializes the DSCEngine contract with supported collateral and price feeds.
-     * @param tokenAddress Array of collateral token addresses.
+     * @param tokenAddresses Array of collateral token addresses.
      * @param priceFeedAddresses Array of corresponding Chainlink price feed addresses.
      * @param dscAddress Address of the Decentralized Stable Coin (DSC) contract.
      */
-    constructor(address[] memory tokenAddress, address[] memory priceFeedAddresses, address dscAddress) {
-        if (tokenAddress.length != priceFeedAddresses.length) {
-            revert DSCEngine__TokenFeedAddressesAndPriceFeedAddressesMustBeSameLength();
+    constructor(address[] memory tokenAddresses, address[] memory priceFeedAddresses, address dscAddress) {
+        if (tokenAddresses.length != priceFeedAddresses.length) {
+             revert DSCEngine__TokenAddressesAndPriceFeedAddressesAmountsDontMatch();
         }
-        for (uint256 i = 0; i < tokenAddress.length; i++) {
-            s_priceFeeds[tokenAddress[i]] = priceFeedAddresses[i];
-            s_collateralTokens.push(tokenAddress[i]);
+        // These feeds will be the USD pairs
+        // For example ETH / USD or MKR / USD
+        for (uint256 i = 0; i < tokenAddresses.length; i++) {
+            s_priceFeeds[tokenAddresses[i]] = priceFeedAddresses[i];
+            s_collateralTokens.push(tokenAddresses[i]);
         }
         i_dsc = DecentralizedStableCoin(dscAddress);
     }
@@ -491,5 +494,8 @@ contract DSCEngine is ReentrancyGuard {
 
     function getCollateralTokenPriceFeed(address token) external view returns (address) {
         return s_priceFeeds[token];
+    }
+        function getHealthFactor(address user) external view returns (uint256) {
+        return _healthFactor(user);
     }
 }
